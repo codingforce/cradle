@@ -3,11 +3,10 @@ var path = require('path'),
     assert = require('assert'),
     events = require('events'),
     http = require('http'),
-    fs = require('fs');
+    fs = require('fs'),
+    vows = require('vows');
 
 require('./scripts/prepare-db');
-
-require.paths.unshift(path.join(__dirname, '..', 'lib'));
 
 function status(code) {
     return function (e, res) {
@@ -24,8 +23,7 @@ function mixin(target) {
     return target;
 }
 
-var cradle = require('cradle');
-var vows = require('vows');
+var cradle = require('../lib/cradle');
 
 vows.describe("Cradle").addBatch({
     "Default connection settings": {
@@ -606,6 +604,16 @@ vows.describe("Cradle").addBatch({
                     },
                     "returns a 404": status(404)
                 }
+            },
+            "cleaning up a view with viewCleanup()": {
+              topic: function (db) {
+                db.viewCleanup(this.callback);
+              },
+              "returns a 202": status(202),
+              "no error is thrown and we get ok response": function (e, res) {
+                assert.ok(!e);
+                assert.ok(res && res.ok && res.ok === true);
+              }
             }
         }
     }
